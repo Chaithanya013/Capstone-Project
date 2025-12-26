@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  backend:
+    image: chaithanya013/backend:dev
+    container_name: backend-dev
+    ports:
+      - "5000:5000"
+
+  frontend:
+    image: chaithanya013/frontend:dev
+    container_name: frontend-dev
+    ports:
+      - "9090:80"
+    depends_on:
+      - backend
