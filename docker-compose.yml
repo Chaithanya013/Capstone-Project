@@ -1,15 +1,27 @@
-version: "3.8"
-
 services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: capstone_db
+      POSTGRES_USER: capstone_user
+      POSTGRES_PASSWORD: capstone_pass
+    ports:
+      - "5432:5432"
+
   backend:
     image: chaithanya013/backend:dev
-    container_name: backend-dev
+    environment:
+      DB_HOST: db
+      DB_NAME: capstone_db
+      DB_USER: capstone_user
+      DB_PASSWORD: capstone_pass
     ports:
       - "5000:5000"
+    depends_on:
+      - db
 
   frontend:
     image: chaithanya013/frontend:dev
-    container_name: frontend-dev
     ports:
       - "9090:80"
     depends_on:
