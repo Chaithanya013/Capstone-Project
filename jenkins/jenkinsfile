@@ -1,6 +1,14 @@
 pipeline {
     agent any
 
+    parameters {
+        choice(
+            name: 'ENV',
+            choices: ['dev', 'staging', 'prod'],
+            description: 'Select environment to deploy'
+        )
+    }
+
     stages {
 
         stage('Checkout Code') {
@@ -25,11 +33,49 @@ pipeline {
             }
         }
 
-        stage('Deploy with Docker Compose') {
+        stage('Trivy Scan - Backend') {
             steps {
-                bat 'docker compose down'
-                bat 'docker compose up -d'
+                bat '''
+                docker run --rm ^
+                  -v /var/run/docker.sock:/var/run/docker.sock ^
+                  aquasec/trivy:latest image ^
+                  --severity HIGH,CRITICAL ^
+                  --exit-code 0 ^
+                  chaithanya013/backend:dev
+                '''
             }
+        }
+
+        stage('Trivy Scan - Frontend') {
+            steps {
+                bat '''
+                docker run --rm ^
+                  -v /var/run/docker.sock:/var/run/docker.sock ^
+                  aquasec/trivy:latest image ^
+                  --severity HIGH,CRITICAL ^
+                  --exit-code 0 ^
+                  chaithanya013/frontend:dev
+                '''
+            }
+        }
+
+        stage('Deploy Application') {
+            steps {
+                bat 'bash scripts/deploy.sh %ENV%'
+            }
+        }
+
+        stage('Health Check') {
+            steps {
+                bat 'bash scripts/health_check.sh %ENV%'
+            }
+        }
+    }
+
+    post {
+        failure {
+            echo 'Pipeline failed. Triggering rollback...'
+            bat 'bash scripts/rollback.sh %ENV%'
         }
     }
 }
