@@ -12,7 +12,7 @@ pipeline {
         stage('Build Backend Image') {
             steps {
                 dir('backend') {
-                    sh 'docker build -t chaithanya013/backend:dev .'
+                    bat 'docker build -t chaithanya013/backend:dev .'
                 }
             }
         }
@@ -20,15 +20,15 @@ pipeline {
         stage('Build Frontend Image') {
             steps {
                 dir('frontend') {
-                    sh 'docker build -t chaithanya013/frontend:dev .'
+                    bat 'docker build -t chaithanya013/frontend:dev .'
                 }
             }
         }
 
         stage('Deploy with Docker Compose') {
             steps {
-                sh 'docker compose down || true'
-                sh 'docker compose up -d'
+                bat 'docker compose down'
+                bat 'docker compose up -d'
             }
         }
     }
