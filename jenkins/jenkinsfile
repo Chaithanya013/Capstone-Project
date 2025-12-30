@@ -61,13 +61,13 @@ pipeline {
 
         stage('Deploy Application') {
             steps {
-                bat 'bash scripts/deploy.sh %ENV%'
+                bat 'powershell -ExecutionPolicy Bypass -File scripts\\deploy.ps1 -Env %ENV%'
             }
         }
 
         stage('Health Check') {
             steps {
-                bat 'bash scripts/health_check.sh %ENV%'
+                bat 'powershell -ExecutionPolicy Bypass -File scripts\\health_check.ps1 -Env %ENV%'
             }
         }
     }
@@ -75,7 +75,7 @@ pipeline {
     post {
         failure {
             echo 'Pipeline failed. Triggering rollback...'
-            bat 'bash scripts/rollback.sh %ENV%'
+            bat 'powershell -ExecutionPolicy Bypass -File scripts\\rollback.ps1 -Env %ENV%'
         }
     }
 }
