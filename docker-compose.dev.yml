@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: capstone_dev
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: dev_pass
+  
+
+  backend:
+    image: chaithanya013/backend:dev
+    environment:
+      DB_HOST: db
+      DB_NAME: capstone_dev
+      DB_USER: dev_user
+      DB_PASSWORD: dev_pass
+      APP_ENV: dev
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+
+  frontend:
+    image: chaithanya013/frontend:dev
+    ports:
+      - "9090:80"
+    depends_on:
+      - backend 

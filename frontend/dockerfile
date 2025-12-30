@@ -1,14 +1,18 @@
-# Use official nginx image
 FROM nginx:alpine
 
-# Remove default nginx website
+# Remove default config
 RUN rm -rf /usr/share/nginx/html/*
 
-# Copy our HTML file to nginx web directory
+# Create non-root user
+RUN adduser -D appuser
+
+# Copy static files
 COPY index.html /usr/share/nginx/html/
 
-# Expose nginx port
-EXPOSE 80
+# Change ownership
+RUN chown -R appuser:appuser /usr/share/nginx/html
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Switch to non-root user
+USER appuser
+
+EXPOSE 80
