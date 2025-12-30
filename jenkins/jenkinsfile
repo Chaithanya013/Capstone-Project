@@ -61,13 +61,14 @@ pipeline {
 
         stage('Deploy Application') {
             steps {
-                bat 'powershell -ExecutionPolicy Bypass -File scripts\\deploy.ps1 -Env %ENV%'
+                bat "docker compose -f docker-compose.%ENV%.yml down --remove-orphans"
+                bat "docker compose -f docker-compose.%ENV%.yml up -d --build"
             }
         }
 
         stage('Health Check') {
             steps {
-                bat 'powershell -ExecutionPolicy Bypass -File scripts\\health_check.ps1 -Env %ENV%'
+                bat "powershell -ExecutionPolicy Bypass -File scripts\\health_check.ps1 -Env %ENV%"
             }
         }
     }
@@ -75,7 +76,7 @@ pipeline {
     post {
         failure {
             echo 'Pipeline failed. Triggering rollback...'
-            bat 'powershell -ExecutionPolicy Bypass -File scripts\\rollback.ps1 -Env %ENV%'
+            bat "powershell -ExecutionPolicy Bypass -File scripts\\rollback.ps1 -Env %ENV%"
         }
     }
 }
