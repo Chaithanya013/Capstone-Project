@@ -1,5 +1,4 @@
 services:
-  services:
   db:
     image: postgres:15
     environment:
@@ -8,7 +7,6 @@ services:
       POSTGRES_PASSWORD: stage_pass
     volumes:
       - pgdata_staging:/var/lib/postgresql/data
-
 
   backend:
     image: chaithanya013/backend:dev
@@ -25,5 +23,6 @@ services:
       - "9091:80"
     depends_on:
       - backend
+
 volumes:
   pgdata_staging:
