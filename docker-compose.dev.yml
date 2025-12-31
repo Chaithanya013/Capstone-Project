@@ -5,16 +5,13 @@ services:
       POSTGRES_DB: capstone_dev
       POSTGRES_USER: dev_user
       POSTGRES_PASSWORD: dev_pass
-  
+    volumes:
+      - pgdata_dev:/var/lib/postgresql/data
 
   backend:
     image: chaithanya013/backend:dev
-    environment:
-      DB_HOST: db
-      DB_NAME: capstone_dev
-      DB_USER: dev_user
-      DB_PASSWORD: dev_pass
-      APP_ENV: dev
+    env_file:
+      - .env.dev
     ports:
       - "5000:5000"
     depends_on:
@@ -25,4 +22,7 @@ services:
     ports:
       - "9090:80"
     depends_on:
-      - backend 
+      - backend
+
+volumes:
+  pgdata_dev:

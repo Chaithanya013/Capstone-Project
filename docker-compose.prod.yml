@@ -1,19 +1,18 @@
 services:
+  services:
   db:
     image: postgres:15
     environment:
       POSTGRES_DB: capstone_prod
       POSTGRES_USER: prod_user
       POSTGRES_PASSWORD: prod_pass
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data
 
   backend:
     image: chaithanya013/backend:dev
-    environment:
-      DB_HOST: db
-      DB_NAME: capstone_prod
-      DB_USER: prod_user
-      DB_PASSWORD: prod_pass
-      APP_ENV: prod
+    env_file:
+      - .env.prod
     ports:
       - "5002:5000"
     depends_on:
@@ -25,3 +24,6 @@ services:
       - "9092:80"
     depends_on:
       - backend
+
+volumes:
+  pgdata_prod:
