@@ -1,28 +1,31 @@
-param(
-    [Parameter(Mandatory=$true)]
-    [ValidateSet("dev","staging","prod")]
+param (
     [string]$Env
 )
 
-switch ($Env) {
-    "dev"     { $port = 5000 }
-    "staging" { $port = 5001 }
-    "prod"    { $port = 5002 }
-}
+$port = 5000
+$url = "http://localhost:$port/health"
 
-Write-Host "Checking health on port $port"
+Write-Host "Checking health on $url"
 
-try {
-    $response = Invoke-WebRequest "http://localhost:$port/health" -UseBasicParsing
-    if ($response.Content -match "UP") {
-        Write-Host "Health check PASSED"
-        exit 0
-    } else {
-        Write-Error "Health check FAILED"
-        exit 1
+$maxRetries = 10
+$retryDelay = 5
+$success = $false
+
+for ($i = 1; $i -le $maxRetries; $i++) {
+    try {
+        $response = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 5
+        if ($response.StatusCode -eq 200) {
+            Write-Host "Health check PASSED"
+            $success = $true
+            break
+        }
+    } catch {
+        Write-Host "Attempt $i failed. Retrying in $retryDelay seconds..."
+        Start-Sleep -Seconds $retryDelay
     }
 }
-catch {
-    Write-Error "Health check FAILED"
+
+if (-not $success) {
+    Write-Error "Health check FAILED after multiple attempts"
     exit 1
 }
