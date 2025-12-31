@@ -2,9 +2,19 @@ param (
     [string]$Env
 )
 
-$port = 5000
-$url = "http://localhost:$port/health"
+if ($Env -eq "prod") {
+    Write-Host "Running health check INSIDE backend container (prod)"
+    docker exec capstone-ci-cd-project-backend-1 curl -f http://localhost:5000/health
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Health check FAILED inside container"
+        exit 1
+    }
+    Write-Host "Health check PASSED inside container"
+    exit 0
+}
 
+# dev / staging
+$url = "http://localhost:5000/health"
 Write-Host "Checking health on $url"
 
 $maxRetries = 10
