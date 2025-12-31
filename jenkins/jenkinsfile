@@ -87,6 +87,26 @@ pipeline {
             }
         }
     }
+        stage('Push Images to Docker Hub') {
+    steps {
+        withCredentials([usernamePassword(
+            credentialsId: 'dockerhub-creds',
+            usernameVariable: 'DOCKER_USER',
+            passwordVariable: 'DOCKER_PASS'
+        )]) {
+            bat '''
+            echo Logging into Docker Hub
+            docker login -u %DOCKER_USER% -p %DOCKER_PASS%
+
+            docker tag chaithanya013/backend:dev chaithanya013/backend:staging
+            docker tag chaithanya013/frontend:dev chaithanya013/frontend:staging
+
+            docker push chaithanya013/backend:staging
+            docker push chaithanya013/frontend:staging
+            '''
+        }
+    }
+
 
     post {
         failure {
