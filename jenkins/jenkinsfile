@@ -65,6 +65,15 @@ pipeline {
             }
         }
 
+        stage('Manual Approval for Production') {
+            when {
+                expression { params.ENV == 'prod' }
+            }
+            steps {
+                input message: 'Approve deployment to PRODUCTION?', ok: 'Deploy to PROD'
+            }
+        }
+
         stage('Deploy Application') {
             steps {
                 bat "docker compose -f docker-compose.%ENV%.yml down --remove-orphans"
