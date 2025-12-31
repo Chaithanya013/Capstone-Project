@@ -2,40 +2,37 @@ param (
     [string]$Env
 )
 
-if ($Env -eq "prod") {
-    Write-Host "Running health check INSIDE backend container (prod)"
-    docker exec capstone-ci-cd-project-backend-1 curl -f http://localhost:5000/health
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "Health check FAILED inside container"
+switch ($Env) {
+    "dev"     { $PORT = 5000 }
+    "staging" { $PORT = 5001 }
+    "prod"    { $PORT = 5002 }
+    default {
+        Write-Error "Invalid environment: $Env"
         exit 1
     }
-    Write-Host "Health check PASSED inside container"
-    exit 0
 }
 
-# dev / staging
-$url = "http://localhost:5000/health"
-Write-Host "Checking health on $url"
+$URL = "http://localhost:$PORT/health"
 
-$maxRetries = 10
-$retryDelay = 5
-$success = $false
+Write-Host "Checking health on $URL"
 
-for ($i = 1; $i -le $maxRetries; $i++) {
+$maxAttempts = 10
+$attempt = 1
+
+while ($attempt -le $maxAttempts) {
     try {
-        $response = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 5
+        $response = Invoke-WebRequest -Uri $URL -UseBasicParsing -TimeoutSec 3
         if ($response.StatusCode -eq 200) {
             Write-Host "Health check PASSED"
-            $success = $true
-            break
+            exit 0
         }
     } catch {
-        Write-Host "Attempt $i failed. Retrying in $retryDelay seconds..."
-        Start-Sleep -Seconds $retryDelay
+        Write-Host "Attempt $attempt failed. Retrying in 5 seconds..."
     }
+
+    Start-Sleep -Seconds 5
+    $attempt++
 }
 
-if (-not $success) {
-    Write-Error "Health check FAILED after multiple attempts"
-    exit 1
-}
+Write-Error "Health check FAILED after multiple attempts"
+exit 1
