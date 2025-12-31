@@ -5,7 +5,7 @@ pipeline {
         choice(
             name: 'ENV',
             choices: ['dev', 'staging', 'prod'],
-            description: 'Select environment to deploy'
+            description: 'Select environment'
         )
     }
 
@@ -20,7 +20,7 @@ pipeline {
         stage('Build Backend Image') {
             steps {
                 dir('backend') {
-                    bat 'docker build -t chaithanya013/backend:dev .'
+                    bat 'docker build -t chaithanya013/backend:dev -f dockerfile .'
                 }
             }
         }
@@ -28,90 +28,81 @@ pipeline {
         stage('Build Frontend Image') {
             steps {
                 dir('frontend') {
-                    bat 'docker build -t chaithanya013/frontend:dev .'
+                    bat 'docker build -t chaithanya013/frontend:dev -f dockerfile .'
+                }
+            }
+        }
+
+        stage('Unit Tests') {
+            steps {
+                dir('backend') {
+                    bat 'docker run --rm chaithanya013/backend:dev pytest test_app.py'
                 }
             }
         }
 
         stage('Trivy Scan - Backend') {
-            options {
-                timeout(time: 10, unit: 'MINUTES')
-            }
             steps {
                 bat '''
-                docker run --rm ^
-                  -v /var/run/docker.sock:/var/run/docker.sock ^
-                  aquasec/trivy:latest image ^
-                  --severity HIGH,CRITICAL ^
-                  --exit-code 0 ^
-                  chaithanya013/backend:dev
+                docker run --rm aquasec/trivy:latest image ^
+                --severity HIGH,CRITICAL ^
+                --exit-code 0 ^
+                chaithanya013/backend:dev
                 '''
             }
         }
 
         stage('Trivy Scan - Frontend') {
-            options {
-                timeout(time: 10, unit: 'MINUTES')
-            }
             steps {
                 bat '''
-                docker run --rm ^
-                  -v /var/run/docker.sock:/var/run/docker.sock ^
-                  aquasec/trivy:latest image ^
-                  --severity HIGH,CRITICAL ^
-                  --exit-code 0 ^
-                  chaithanya013/frontend:dev
+                docker run --rm aquasec/trivy:latest image ^
+                --severity HIGH,CRITICAL ^
+                --exit-code 0 ^
+                chaithanya013/frontend:dev
                 '''
             }
         }
 
-        stage('Manual Approval for Production') {
-            when {
-                expression { params.ENV == 'prod' }
-            }
+        stage('Push Images to Docker Hub') {
             steps {
-                input message: 'Approve deployment to PRODUCTION?', ok: 'Deploy to PROD'
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    bat '''
+                    docker login -u %DOCKER_USER% -p %DOCKER_PASS%
+
+                    docker tag chaithanya013/backend:dev chaithanya013/backend:staging
+                    docker tag chaithanya013/frontend:dev chaithanya013/frontend:staging
+
+                    docker push chaithanya013/backend:staging
+                    docker push chaithanya013/frontend:staging
+                    '''
+                }
             }
         }
 
         stage('Deploy Application') {
             steps {
-                bat "docker compose -f docker-compose.%ENV%.yml down --remove-orphans"
-                bat "docker compose -f docker-compose.%ENV%.yml up -d --build"
+                bat '''
+                docker compose -f docker-compose.%ENV%.yml down --remove-orphans
+                docker compose -f docker-compose.%ENV%.yml up -d
+                '''
             }
         }
 
         stage('Health Check') {
             steps {
-                bat "powershell -ExecutionPolicy Bypass -File scripts\\health_check.ps1 -Env %ENV%"
+                bat 'powershell -ExecutionPolicy Bypass -File scripts\\health_check.ps1 -Env %ENV%'
             }
         }
     }
-        stage('Push Images to Docker Hub') {
-    steps {
-        withCredentials([usernamePassword(
-            credentialsId: 'dockerhub-creds',
-            usernameVariable: 'DOCKER_USER',
-            passwordVariable: 'DOCKER_PASS'
-        )]) {
-            bat '''
-            echo Logging into Docker Hub
-            docker login -u %DOCKER_USER% -p %DOCKER_PASS%
-
-            docker tag chaithanya013/backend:dev chaithanya013/backend:staging
-            docker tag chaithanya013/frontend:dev chaithanya013/frontend:staging
-
-            docker push chaithanya013/backend:staging
-            docker push chaithanya013/frontend:staging
-            '''
-        }
-    }
-
 
     post {
         failure {
             echo 'Pipeline failed. Triggering rollback...'
-            bat "powershell -ExecutionPolicy Bypass -File scripts\\rollback.ps1 -Env %ENV%"
+            bat 'powershell -ExecutionPolicy Bypass -File scripts\\rollback.ps1 -Env %ENV%'
         }
     }
 }
