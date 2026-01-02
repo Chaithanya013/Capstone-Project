@@ -10,8 +10,12 @@ services:
 
   backend:
     image: chaithanya013/backend:dev
-    env_file:
-      - .env.dev
+    environment:
+      APP_ENV: dev
+      DB_HOST: db
+      DB_NAME: capstone_dev
+      DB_USER: dev_user
+      DB_PASSWORD: dev_pass
     ports:
       - "5000:5000"
     depends_on:
