@@ -36,39 +36,38 @@ pipeline {
         stage('Unit Tests') {
             steps {
                 dir('backend') {
-                    bat 'docker run --rm chaithanya013/backend:dev pytest test_app.py'
+                    bat 'docker run --rm chaithanya013/backend:dev pytest'
                 }
             }
         }
 
-       
         stage('Trivy Scan - Backend') {
             steps {
                 bat '''
                 docker run --rm ^
-                -v //./pipe/docker_engine://./pipe/docker_engine ^
-                aquasec/trivy:latest image ^
-                --severity HIGH,CRITICAL ^
-                --exit-code 0 ^
-                chaithanya013/backend:dev
+                  -e DOCKER_HOST=npipe:////./pipe/docker_engine ^
+                  -v //./pipe/docker_engine://./pipe/docker_engine ^
+                  aquasec/trivy:latest image ^
+                  --severity HIGH,CRITICAL ^
+                  --exit-code 0 ^
+                  chaithanya013/backend:dev
                 '''
             }
         }
-
 
         stage('Trivy Scan - Frontend') {
             steps {
                 bat '''
                 docker run --rm ^
-                -v //./pipe/docker_engine://./pipe/docker_engine ^
-                aquasec/trivy:latest image ^
-                --severity HIGH,CRITICAL ^
-                --exit-code 0 ^
-                chaithanya013/frontend:dev
+                  -e DOCKER_HOST=npipe:////./pipe/docker_engine ^
+                  -v //./pipe/docker_engine://./pipe/docker_engine ^
+                  aquasec/trivy:latest image ^
+                  --severity HIGH,CRITICAL ^
+                  --exit-code 0 ^
+                  chaithanya013/frontend:dev
                 '''
             }
         }
-
 
         stage('Push Images to Docker Hub') {
             steps {
@@ -80,11 +79,11 @@ pipeline {
                     bat '''
                     docker login -u %DOCKER_USER% -p %DOCKER_PASS%
 
-                    docker tag chaithanya013/backend:dev chaithanya013/backend:staging
-                    docker tag chaithanya013/frontend:dev chaithanya013/frontend:staging
+                    docker tag chaithanya013/backend:dev chaithanya013/backend:%ENV%
+                    docker tag chaithanya013/frontend:dev chaithanya013/frontend:%ENV%
 
-                    docker push chaithanya013/backend:staging
-                    docker push chaithanya013/frontend:staging
+                    docker push chaithanya013/backend:%ENV%
+                    docker push chaithanya013/frontend:%ENV%
                     '''
                 }
             }
