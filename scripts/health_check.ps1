@@ -4,37 +4,44 @@ param (
 
 Write-Host "Running health check for environment: $Env"
 
-# Decide port based on environment
-switch ($Env) {
-    "dev"     { $PORT = 5000 }
-    "staging" { $PORT = 5001 }
-    "prod"    { $PORT = 5002 }
-    default {
-        Write-Error "Invalid environment: $Env"
-        exit 1
-    }
+# Port mapping based on environment
+if ($Env -eq "dev") {
+    $PORT = 5000
+}
+elseif ($Env -eq "staging") {
+    $PORT = 5001
+}
+elseif ($Env -eq "prod") {
+    $PORT = 5002
+}
+else {
+    Write-Host "Unknown environment"
+    exit 1
 }
 
 $URL = "http://localhost:$PORT/health"
+
 $MAX_RETRIES = 10
-$SLEEP_TIME = 5
+$SLEEP_SECONDS = 5
+$attempt = 1
 
-for ($i = 1; $i -le $MAX_RETRIES; $i++) {
+while ($attempt -le $MAX_RETRIES) {
+    Write-Host "Health check attempt $attempt..."
+
     try {
-        Write-Host "Attempt $i: Checking $URL"
-        $response = Invoke-WebRequest -Uri $URL -UseBasicParsing -TimeoutSec 5
-
-        if ($response.StatusCode -eq 200) {
-            Write-Host "Health check PASSED for $Env"
+        $response = Invoke-RestMethod -Uri $URL -TimeoutSec 5
+        if ($response.status -eq "UP") {
+            Write-Host "Health check PASSED"
             exit 0
         }
     }
     catch {
-        Write-Host "Service not ready yet. Retrying in $SLEEP_TIME seconds..."
+        Write-Host "Service not ready yet..."
     }
 
-    Start-Sleep -Seconds $SLEEP_TIME
+    Start-Sleep -Seconds $SLEEP_SECONDS
+    $attempt++
 }
 
-Write-Error "Health check FAILED for $Env after $MAX_RETRIES attempts"
+Write-Host "Health check FAILED after retries"
 exit 1
