@@ -41,10 +41,13 @@ pipeline {
             }
         }
 
+       
         stage('Trivy Scan - Backend') {
             steps {
                 bat '''
-                docker run --rm aquasec/trivy:latest image ^
+                docker run --rm ^
+                -v //./pipe/docker_engine://./pipe/docker_engine ^
+                aquasec/trivy:latest image ^
                 --severity HIGH,CRITICAL ^
                 --exit-code 0 ^
                 chaithanya013/backend:dev
@@ -52,16 +55,20 @@ pipeline {
             }
         }
 
+
         stage('Trivy Scan - Frontend') {
             steps {
                 bat '''
-                docker run --rm aquasec/trivy:latest image ^
+                docker run --rm ^
+                -v //./pipe/docker_engine://./pipe/docker_engine ^
+                aquasec/trivy:latest image ^
                 --severity HIGH,CRITICAL ^
                 --exit-code 0 ^
                 chaithanya013/frontend:dev
                 '''
             }
         }
+
 
         stage('Push Images to Docker Hub') {
             steps {
