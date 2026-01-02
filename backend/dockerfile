@@ -21,7 +21,7 @@ COPY --from=builder /install /usr/local
 
 # Copy application and tests
 COPY app.py .
-COPY tests_app.py .
+COPY test_app.py .
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
