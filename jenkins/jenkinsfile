@@ -9,6 +9,10 @@ pipeline {
         )
     }
 
+    environment {
+        DOCKER_BUILDKIT = '1'
+    }
+
     stages {
 
         stage('Checkout Code') {
@@ -20,7 +24,7 @@ pipeline {
         stage('Build Backend Image') {
             steps {
                 dir('backend') {
-                    bat 'docker build -t chaithanya013/backend:dev -f dockerfile .'
+                    bat 'docker build -t chaithanya013/backend:dev .'
                 }
             }
         }
@@ -28,7 +32,7 @@ pipeline {
         stage('Build Frontend Image') {
             steps {
                 dir('frontend') {
-                    bat 'docker build -t chaithanya013/frontend:dev -f dockerfile .'
+                    bat 'docker build -t chaithanya013/frontend:dev .'
                 }
             }
         }
@@ -41,51 +45,22 @@ pipeline {
             }
         }
 
-        /* =======================
-           SAVE IMAGES AS TAR
-           ======================= */
-        stage('Save Images for Trivy') {
-            steps {
-                bat '''
-                docker save chaithanya013/backend:dev -o backend.tar
-                docker save chaithanya013/frontend:dev -o frontend.tar
-                '''
-            }
-        }
-
-        /* =======================
-           TRIVY SCAN (TAR FILES)
-           ======================= */
         stage('Trivy Scan - Backend') {
             steps {
-                bat '''
-                docker run --rm ^
-                  -v %cd%:/scan ^
-                  aquasec/trivy:latest image ^
-                  --input /scan/backend.tar ^
-                  --severity HIGH,CRITICAL ^
-                  --exit-code 0
-                '''
+                bat 'trivy image --severity HIGH,CRITICAL --exit-code 0 chaithanya013/backend:dev'
             }
         }
 
         stage('Trivy Scan - Frontend') {
             steps {
-                bat '''
-                docker run --rm ^
-                  -v %cd%:/scan ^
-                  aquasec/trivy:latest image ^
-                  --input /scan/frontend.tar ^
-                  --severity HIGH,CRITICAL ^
-                  --exit-code 0
-                '''
+                bat 'trivy image --severity HIGH,CRITICAL --exit-code 0 chaithanya013/frontend:dev'
             }
         }
 
-        /* =======================
-           PUSH TO DOCKER HUB
-           ======================= */
         stage('Push Images to Docker Hub') {
+            when {
+                expression { params.ENV == 'staging' || params.ENV == 'prod' }
+            }
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-creds',
@@ -105,9 +80,6 @@ pipeline {
             }
         }
 
-        /* =======================
-           DEPLOY
-           ======================= */
         stage('Deploy Application') {
             steps {
                 bat '''
