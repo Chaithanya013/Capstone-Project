@@ -9,6 +9,12 @@ pipeline {
         )
     }
 
+    environment {
+        BACKEND_IMAGE = "chaithanya013/backend:dev"
+        FRONTEND_IMAGE = "chaithanya013/frontend:dev"
+        WORKSPACE_DIR = "${env.WORKSPACE}"
+    }
+
     stages {
 
         stage('Checkout Code') {
@@ -20,7 +26,7 @@ pipeline {
         stage('Build Backend Image') {
             steps {
                 dir('backend') {
-                    bat 'docker build -t chaithanya013/backend:dev -f dockerfile .'
+                    bat 'docker build -t %BACKEND_IMAGE% -f dockerfile .'
                 }
             }
         }
@@ -28,7 +34,7 @@ pipeline {
         stage('Build Frontend Image') {
             steps {
                 dir('frontend') {
-                    bat 'docker build -t chaithanya013/frontend:dev -f dockerfile .'
+                    bat 'docker build -t %FRONTEND_IMAGE% -f dockerfile .'
                 }
             }
         }
@@ -36,31 +42,25 @@ pipeline {
         stage('Unit Tests') {
             steps {
                 dir('backend') {
-                    bat 'docker run --rm chaithanya013/backend:dev pytest'
+                    bat 'docker run --rm %BACKEND_IMAGE% pytest'
                 }
             }
         }
 
-        /* ===============================
-           SAVE IMAGES AS TAR (IMPORTANT)
-           =============================== */
         stage('Save Images for Trivy') {
             steps {
                 bat '''
-                docker save chaithanya013/backend:dev -o backend.tar
-                docker save chaithanya013/frontend:dev -o frontend.tar
+                docker save %BACKEND_IMAGE% -o backend.tar
+                docker save %FRONTEND_IMAGE% -o frontend.tar
                 '''
             }
         }
 
-        /* ===============================
-           TRIVY SCAN USING TAR FILES
-           =============================== */
         stage('Trivy Scan - Backend') {
             steps {
                 bat '''
                 docker run --rm ^
-                  -v %cd%:/scan ^
+                  -v %WORKSPACE_DIR%:/scan ^
                   aquasec/trivy:latest image ^
                   --input /scan/backend.tar ^
                   --severity HIGH,CRITICAL ^
@@ -73,7 +73,7 @@ pipeline {
             steps {
                 bat '''
                 docker run --rm ^
-                  -v %cd%:/scan ^
+                  -v %WORKSPACE_DIR%:/scan ^
                   aquasec/trivy:latest image ^
                   --input /scan/frontend.tar ^
                   --severity HIGH,CRITICAL ^
@@ -92,8 +92,8 @@ pipeline {
                     bat '''
                     docker login -u %DOCKER_USER% -p %DOCKER_PASS%
 
-                    docker tag chaithanya013/backend:dev chaithanya013/backend:%ENV%
-                    docker tag chaithanya013/frontend:dev chaithanya013/frontend:%ENV%
+                    docker tag %BACKEND_IMAGE% chaithanya013/backend:%ENV%
+                    docker tag %FRONTEND_IMAGE% chaithanya013/frontend:%ENV%
 
                     docker push chaithanya013/backend:%ENV%
                     docker push chaithanya013/frontend:%ENV%

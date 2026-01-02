@@ -1,38 +1,30 @@
-param (
+param(
     [string]$Env
 )
 
-switch ($Env) {
-    "dev"     { $PORT = 5000 }
-    "staging" { $PORT = 5001 }
-    "prod"    { $PORT = 5002 }
-    default {
-        Write-Error "Invalid environment: $Env"
-        exit 1
-    }
-}
+if ($Env -eq "dev") { $port = 5000 }
+elseif ($Env -eq "staging") { $port = 5001 }
+elseif ($Env -eq "prod") { $port = 5002 }
 
-$URL = "http://localhost:$PORT/health"
+Write-Host "Checking backend health on port $port"
 
-Write-Host "Checking health on $URL"
+$maxRetries = 10
+$retry = 0
 
-$maxAttempts = 10
-$attempt = 1
-
-while ($attempt -le $maxAttempts) {
+while ($retry -lt $maxRetries) {
     try {
-        $response = Invoke-WebRequest -Uri $URL -UseBasicParsing -TimeoutSec 3
-        if ($response.StatusCode -eq 200) {
+        $response = Invoke-RestMethod "http://localhost:$port/health" -TimeoutSec 5
+        if ($response.status -eq "UP") {
             Write-Host "Health check PASSED"
             exit 0
         }
     } catch {
-        Write-Host "Attempt $attempt failed. Retrying in 5 seconds..."
+        Write-Host "Waiting for service..."
     }
 
     Start-Sleep -Seconds 5
-    $attempt++
+    $retry++
 }
 
-Write-Error "Health check FAILED after multiple attempts"
+Write-Error "Health check FAILED"
 exit 1
