@@ -42,7 +42,7 @@ pipeline {
         stage('Unit Tests') {
             steps {
                 dir('backend') {
-                    bat 'docker run --rm %BACKEND_IMAGE% pytest'
+                    bat 'docker run --rm chaithanya013/backend:dev pytest -p no:cacheprovider'
                 }
             }
         }
