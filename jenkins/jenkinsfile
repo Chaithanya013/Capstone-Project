@@ -41,16 +41,30 @@ pipeline {
             }
         }
 
+        /* =======================
+           SAVE IMAGES AS TAR
+           ======================= */
+        stage('Save Images for Trivy') {
+            steps {
+                bat '''
+                docker save chaithanya013/backend:dev -o backend.tar
+                docker save chaithanya013/frontend:dev -o frontend.tar
+                '''
+            }
+        }
+
+        /* =======================
+           TRIVY SCAN (TAR FILES)
+           ======================= */
         stage('Trivy Scan - Backend') {
             steps {
                 bat '''
                 docker run --rm ^
-                  -e DOCKER_HOST=npipe:////./pipe/docker_engine ^
-                  -v //./pipe/docker_engine://./pipe/docker_engine ^
+                  -v %cd%:/scan ^
                   aquasec/trivy:latest image ^
+                  --input /scan/backend.tar ^
                   --severity HIGH,CRITICAL ^
-                  --exit-code 0 ^
-                  chaithanya013/backend:dev
+                  --exit-code 0
                 '''
             }
         }
@@ -59,16 +73,18 @@ pipeline {
             steps {
                 bat '''
                 docker run --rm ^
-                  -e DOCKER_HOST=npipe:////./pipe/docker_engine ^
-                  -v //./pipe/docker_engine://./pipe/docker_engine ^
+                  -v %cd%:/scan ^
                   aquasec/trivy:latest image ^
+                  --input /scan/frontend.tar ^
                   --severity HIGH,CRITICAL ^
-                  --exit-code 0 ^
-                  chaithanya013/frontend:dev
+                  --exit-code 0
                 '''
             }
         }
 
+        /* =======================
+           PUSH TO DOCKER HUB
+           ======================= */
         stage('Push Images to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(
@@ -89,6 +105,9 @@ pipeline {
             }
         }
 
+        /* =======================
+           DEPLOY
+           ======================= */
         stage('Deploy Application') {
             steps {
                 bat '''
