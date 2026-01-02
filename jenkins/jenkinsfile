@@ -9,10 +9,6 @@ pipeline {
         )
     }
 
-    environment {
-        DOCKER_BUILDKIT = '1'
-    }
-
     stages {
 
         stage('Checkout Code') {
@@ -24,7 +20,7 @@ pipeline {
         stage('Build Backend Image') {
             steps {
                 dir('backend') {
-                    bat 'docker build -t chaithanya013/backend:dev .'
+                    bat 'docker build -t chaithanya013/backend:dev -f dockerfile .'
                 }
             }
         }
@@ -32,7 +28,7 @@ pipeline {
         stage('Build Frontend Image') {
             steps {
                 dir('frontend') {
-                    bat 'docker build -t chaithanya013/frontend:dev .'
+                    bat 'docker build -t chaithanya013/frontend:dev -f dockerfile .'
                 }
             }
         }
@@ -45,22 +41,48 @@ pipeline {
             }
         }
 
+        /* ===============================
+           SAVE IMAGES AS TAR (IMPORTANT)
+           =============================== */
+        stage('Save Images for Trivy') {
+            steps {
+                bat '''
+                docker save chaithanya013/backend:dev -o backend.tar
+                docker save chaithanya013/frontend:dev -o frontend.tar
+                '''
+            }
+        }
+
+        /* ===============================
+           TRIVY SCAN USING TAR FILES
+           =============================== */
         stage('Trivy Scan - Backend') {
             steps {
-                bat 'trivy image --severity HIGH,CRITICAL --exit-code 0 chaithanya013/backend:dev'
+                bat '''
+                docker run --rm ^
+                  -v %cd%:/scan ^
+                  aquasec/trivy:latest image ^
+                  --input /scan/backend.tar ^
+                  --severity HIGH,CRITICAL ^
+                  --exit-code 0
+                '''
             }
         }
 
         stage('Trivy Scan - Frontend') {
             steps {
-                bat 'trivy image --severity HIGH,CRITICAL --exit-code 0 chaithanya013/frontend:dev'
+                bat '''
+                docker run --rm ^
+                  -v %cd%:/scan ^
+                  aquasec/trivy:latest image ^
+                  --input /scan/frontend.tar ^
+                  --severity HIGH,CRITICAL ^
+                  --exit-code 0
+                '''
             }
         }
 
         stage('Push Images to Docker Hub') {
-            when {
-                expression { params.ENV == 'staging' || params.ENV == 'prod' }
-            }
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-creds',
