@@ -1,39 +1,38 @@
 param (
-    [string]$Env = "dev"
+    [string]$Env
 )
 
 Write-Host "Running health check for environment: $Env"
 
-# -------- ENV → PORT MAPPING --------
+# Map backend ports per environment
 switch ($Env) {
     "dev"     { $PORT = 5000 }
     "staging" { $PORT = 5001 }
     "prod"    { $PORT = 5002 }
     default {
-        Write-Host "Invalid environment: $Env"
+        Write-Error "Unknown environment: $Env"
         exit 1
     }
 }
 
 $URL = "http://localhost:$PORT/health"
-$MAX_RETRIES = 10
-$SLEEP = 5
+Write-Host "Checking backend health at $URL"
 
-Write-Host "Health check URL: $URL"
+$MAX_RETRIES = 12
+$SLEEP_SECONDS = 5
 
 for ($i = 1; $i -le $MAX_RETRIES; $i++) {
     try {
-        $response = Invoke-RestMethod -Uri $URL -Method GET -TimeoutSec 5
+        $response = Invoke-RestMethod -Uri $URL -Method Get -TimeoutSec 5
         if ($response.status -eq "UP") {
-            Write-Host "Health check PASSED"
+            Write-Host "✅ Health check PASSED for $Env"
             exit 0
         }
+    } catch {
+        Write-Host "⏳ Attempt $i/$MAX_RETRIES failed, retrying..."
     }
-    catch {
-        Write-Host "Attempt $i failed. Retrying in $SLEEP seconds..."
-        Start-Sleep -Seconds $SLEEP
-    }
+    Start-Sleep -Seconds $SLEEP_SECONDS
 }
 
-Write-Host "Health check FAILED after $MAX_RETRIES attempts"
+Write-Error "Health check FAILED for $Env after retries"
 exit 1
