@@ -1,47 +1,50 @@
-param (
+param(
     [string]$Env
 )
 
 Write-Host "Running health check for environment: $Env"
 
-# Get backend container name dynamically
+# Get backend container dynamically
 $container = docker ps --filter "name=backend" --format "{{.Names}}" | Select-Object -First 1
 
 if (-not $container) {
-    Write-Error "Backend container not found"
+    Write-Error "Backend container not running"
     exit 1
 }
 
 Write-Host "Backend container: $container"
 
 # Get mapped host port for container port 5000
-$portInfo = docker port $container 5000/tcp
+$port = docker inspect `
+    --format='{{(index (index .NetworkSettings.Ports "5000/tcp") 0).HostPort}}' `
+    $container
 
-if (-not $portInfo) {
-    Write-Error "Backend port not exposed"
+if (-not $port) {
+    Write-Error "Could not detect mapped port"
     exit 1
 }
 
-$PORT = ($portInfo -split ":")[1]
-$URL = "http://localhost:$PORT/health"
+Write-Host "Detected backend port: $port"
 
-Write-Host "Health check URL: $URL"
+# Retry logic (important for staging/prod)
+$maxRetries = 10
+$retry = 0
 
-$MAX_RETRIES = 12
-$SLEEP = 5
-
-for ($i = 1; $i -le $MAX_RETRIES; $i++) {
+while ($retry -lt $maxRetries) {
     try {
-        $response = Invoke-RestMethod -Uri $URL -TimeoutSec 5
+        $response = Invoke-RestMethod "http://localhost:$port/health" -TimeoutSec 5
+
         if ($response.status -eq "UP") {
             Write-Host "Health check PASSED"
             exit 0
         }
     } catch {
-        Write-Host "Attempt $i failed, retrying..."
+        Write-Host "Waiting for backend to be ready..."
     }
-    Start-Sleep -Seconds $SLEEP
+
+    Start-Sleep -Seconds 5
+    $retry++
 }
 
-Write-Error "Health check FAILED"
+Write-Error "Health check FAILED after retries"
 exit 1
