@@ -1,51 +1,37 @@
 param(
-    [Parameter(Mandatory = $true)]
     [string]$Env
 )
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "Starting health check for ENV = $Env"
+Write-Host "Running health check for environment: $Env"
 
-# FIXED, EXPLICIT PORT MAPPING (NO MAGIC)
-if ($Env -eq "dev") {
-    $PORT = 5000
-}
-elseif ($Env -eq "staging") {
-    $PORT = 5001
-}
-elseif ($Env -eq "prod") {
-    $PORT = 5002
-}
-else {
-    Write-Error "Invalid ENV value: $Env"
+$container = docker ps --filter "name=backend" --format "{{.Names}}" | Select-Object -First 1
+
+if (-not $container) {
+    Write-Error "Backend container not running"
     exit 1
 }
 
-$URL = "http://localhost:$PORT/health"
-Write-Host "Health check URL: $URL"
+$port = docker inspect --format='{{(index (index .NetworkSettings.Ports "5000/tcp") 0).HostPort}}' $container
 
-$MAX_RETRIES = 15
-$SLEEP = 4
+$maxRetries = 12
+$retry = 0
 
-for ($i = 1; $i -le $MAX_RETRIES; $i++) {
+while ($retry -lt $maxRetries) {
     try {
-        $response = Invoke-RestMethod -Uri $URL -TimeoutSec 5 -UseBasicParsing
-
+        $response = Invoke-RestMethod -Uri "http://localhost:$port/health" -TimeoutSec 5 -UseBasicParsing
         if ($response.status -eq "UP") {
-            Write-Host "✅ HEALTH CHECK PASSED for $Env"
+            Write-Host "Health check PASSED"
             exit 0
         }
-        else {
-            Write-Host "Attempt $i: Service responded but status not UP"
-        }
-    }
-    catch {
-        Write-Host "Attempt $i: Backend not ready yet"
+    } catch {
+        Write-Host "Attempt $($retry + 1): Service not ready yet"
     }
 
-    Start-Sleep -Seconds $SLEEP
+    Start-Sleep -Seconds 5
+    $retry++
 }
 
-Write-Error "❌ HEALTH CHECK FAILED for $Env after retries"
+Write-Error "Health check FAILED"
 exit 1
