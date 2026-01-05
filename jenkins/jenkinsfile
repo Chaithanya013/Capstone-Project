@@ -9,12 +9,6 @@ pipeline {
         )
     }
 
-    environment {
-        BACKEND_IMAGE = "chaithanya013/backend:dev"
-        FRONTEND_IMAGE = "chaithanya013/frontend:dev"
-        WORKSPACE_DIR = "${env.WORKSPACE}"
-    }
-
     stages {
 
         stage('Checkout Code') {
@@ -26,7 +20,7 @@ pipeline {
         stage('Build Backend Image') {
             steps {
                 dir('backend') {
-                    bat 'docker build -t %BACKEND_IMAGE% -f dockerfile .'
+                    bat 'docker build -t chaithanya013/backend:dev -f dockerfile .'
                 }
             }
         }
@@ -34,7 +28,7 @@ pipeline {
         stage('Build Frontend Image') {
             steps {
                 dir('frontend') {
-                    bat 'docker build -t %FRONTEND_IMAGE% -f dockerfile .'
+                    bat 'docker build -t chaithanya013/frontend:dev -f dockerfile .'
                 }
             }
         }
@@ -50,8 +44,8 @@ pipeline {
         stage('Save Images for Trivy') {
             steps {
                 bat '''
-                docker save %BACKEND_IMAGE% -o backend.tar
-                docker save %FRONTEND_IMAGE% -o frontend.tar
+                docker save chaithanya013/backend:dev -o backend.tar
+                docker save chaithanya013/frontend:dev -o frontend.tar
                 '''
             }
         }
@@ -60,7 +54,7 @@ pipeline {
             steps {
                 bat '''
                 docker run --rm ^
-                  -v %WORKSPACE_DIR%:/scan ^
+                  -v %CD%:/scan ^
                   aquasec/trivy:latest image ^
                   --input /scan/backend.tar ^
                   --severity HIGH,CRITICAL ^
@@ -73,7 +67,7 @@ pipeline {
             steps {
                 bat '''
                 docker run --rm ^
-                  -v %WORKSPACE_DIR%:/scan ^
+                  -v %CD%:/scan ^
                   aquasec/trivy:latest image ^
                   --input /scan/frontend.tar ^
                   --severity HIGH,CRITICAL ^
@@ -91,10 +85,8 @@ pipeline {
                 )]) {
                     bat '''
                     docker login -u %DOCKER_USER% -p %DOCKER_PASS%
-
-                    docker tag %BACKEND_IMAGE% chaithanya013/backend:%ENV%
-                    docker tag %FRONTEND_IMAGE% chaithanya013/frontend:%ENV%
-
+                    docker tag chaithanya013/backend:dev chaithanya013/backend:%ENV%
+                    docker tag chaithanya013/frontend:dev chaithanya013/frontend:%ENV%
                     docker push chaithanya013/backend:%ENV%
                     docker push chaithanya013/frontend:%ENV%
                     '''
@@ -120,7 +112,7 @@ pipeline {
 
     post {
         failure {
-            echo 'Pipeline failed. Triggering rollback...'
+            echo 'Pipeline failed. Triggering rollback....'
             bat 'powershell -ExecutionPolicy Bypass -File scripts\\rollback.ps1 -Env %ENV%'
         }
     }
