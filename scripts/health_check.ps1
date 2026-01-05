@@ -1,40 +1,47 @@
-param([string]$Env)
+param(
+    [string]$Env
+)
+
 $ErrorActionPreference = "Stop"
+
 Write-Host "Running health check for environment: $Env"
 
-# Dynamically find the backend container name
-$container = docker ps --filter "name=backend" --format "{{.Names}}" | Select-Object -First 1
-if (-not $container) {
-    Write-Error "Backend container not running"
-    exit 1
-}
-Write-Host "Found Container: $container"
-
-# Detect host port mapped to container port 5000 (detected as 5001 in your case)
-$port = docker inspect --format='{{(index (index .NetworkSettings.Ports "5000/tcp") 0).HostPort}}' $container
-if (-not $port) {
-    Write-Error "Could not detect mapped port for container port 5000"
-    exit 1
+# Map env to port
+switch ($Env) {
+    "dev"     { $port = 5000 }
+    "staging" { $port = 5001 }
+    "prod"    { $port = 5002 }
+    default {
+        Write-Error "Invalid environment: $Env"
+        exit 1
+    }
 }
 
 $targetHost = "localhost"
-# FIX: Using ${} ensures PowerShell reads the variable correctly before the colon
-Write-Host "Detected port: ${port}. Probing http://${targetHost}:${port}/health"
+$url = "http://$targetHost:$port/health"
 
-$maxRetries = 10
+Write-Host "Probing $url"
+
+$maxRetries = 12
 $retry = 0
+
 while ($retry -lt $maxRetries) {
     try {
-        $response = Invoke-RestMethod -Uri "http://${targetHost}:${port}/health" -TimeoutSec 5 -UseBasicParsing
-        if ($null -ne $response -and ($response.status -eq "UP" -or $response.Status -eq "UP")) {
-            Write-Host "Health check PASSED"
+        $response = Invoke-RestMethod -Uri $url -TimeoutSec 5 -UseBasicParsing
+
+        if ($response.status -eq "UP") {
+            Write-Host "Health check PASSED for $Env"
             exit 0
+        } else {
+            Write-Host "Service responding but not UP"
         }
     } catch {
-        Write-Host "Attempt $($retry + 1): Backend not ready yet..."
+        Write-Host "Attempt $($retry + 1): Service not ready"
     }
+
     Start-Sleep -Seconds 5
     $retry++
 }
-Write-Error "Health check FAILED after $maxRetries retries"
+
+Write-Error "Health check FAILED for $Env"
 exit 1
