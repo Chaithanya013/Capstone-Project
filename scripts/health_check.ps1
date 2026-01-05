@@ -2,12 +2,10 @@ param(
     [string]$Env
 )
 
-# 1. Force errors to be caught by the try/catch block
 $ErrorActionPreference = "Stop"
-
 Write-Host "Running health check for environment: $Env"
 
-# Get backend container dynamically
+# Get backend container dynamically (matches the name seen in your logs)
 $container = docker ps --filter "name=backend" --format "{{.Names}}" | Select-Object -First 1
 
 if (-not $container) {
@@ -15,29 +13,28 @@ if (-not $container) {
     exit 1
 }
 
-# 2. Improved Port Detection 
-# Added a check to see if the port 5000 is actually mapped
-try {
-    $port = docker inspect --format='{{(index (index .NetworkSettings.Ports "5000/tcp") 0).HostPort}}' $container
-} catch {
-    Write-Error "Port 5000 is not mapped to the host. Check your docker-compose or run command."
+Write-Host "Found Container: $container"
+
+# Get mapped host port for container port 5000
+$port = docker inspect --format='{{(index (index .NetworkSettings.Ports "5000/tcp") 0).HostPort}}' $container
+
+if (-not $port) {
+    Write-Error "Could not detect mapped port for container port 5000"
     exit 1
 }
 
-# 3. Determine Hostname (Local vs Remote)
-# If Jenkins is on a different machine than the container, replace 'localhost'
-$targetHost = "localhost" 
-Write-Host "Detected port: $port. Probing http://$targetHost:$port/health"
+$targetHost = "localhost"
+# FIX: Use ${} to prevent the "Variable reference is not valid" error
+Write-Host "Detected port: ${port}. Probing http://${targetHost}:${port}/health"
 
-$maxRetries = 12 # Increased to 1 minute total (12 * 5s)
+$maxRetries = 12
 $retry = 0
 
 while ($retry -lt $maxRetries) {
     try {
-        # Added -UseBasicParsing for Jenkins compatibility
-        $response = Invoke-RestMethod -Uri "http://$targetHost:$port/health" -TimeoutSec 5 -UseBasicParsing
+        # FIX: Use ${} here as well
+        $response = Invoke-RestMethod -Uri "http://${targetHost}:${port}/health" -TimeoutSec 5 -UseBasicParsing
         
-        # Check if response is null or status isn't "UP"
         if ($null -ne $response -and ($response.status -eq "UP" -or $response.Status -eq "UP")) {
             Write-Host "Health check PASSED"
             exit 0
@@ -45,8 +42,7 @@ while ($retry -lt $maxRetries) {
             Write-Host "Response received but status is: $($response.status)"
         }
     } catch {
-        $ex = $_.Exception.Message
-        Write-Host "Attempt $($retry + 1): Backend not ready ($ex)"
+        Write-Host "Attempt $($retry + 1): Waiting for backend to be ready..."
     }
 
     Start-Sleep -Seconds 5
