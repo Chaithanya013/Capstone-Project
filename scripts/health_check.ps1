@@ -1,43 +1,51 @@
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("dev", "staging", "prod")]
     [string]$Env
 )
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "Running health check for ENV=$Env"
+Write-Host "Starting health check for ENV = $Env"
 
-# Explicit port mapping per environment
-switch ($Env) {
-    "dev"     { $port = 5000 }
-    "staging" { $port = 5001 }
-    "prod"    { $port = 5002 }
+# FIXED, EXPLICIT PORT MAPPING (NO MAGIC)
+if ($Env -eq "dev") {
+    $PORT = 5000
+}
+elseif ($Env -eq "staging") {
+    $PORT = 5001
+}
+elseif ($Env -eq "prod") {
+    $PORT = 5002
+}
+else {
+    Write-Error "Invalid ENV value: $Env"
+    exit 1
 }
 
-$healthUrl = "http://localhost:$port/health"
-Write-Host "Health URL: $healthUrl"
+$URL = "http://localhost:$PORT/health"
+Write-Host "Health check URL: $URL"
 
-$maxRetries = 12
-$retryDelay = 5
+$MAX_RETRIES = 15
+$SLEEP = 4
 
-for ($i = 1; $i -le $maxRetries; $i++) {
+for ($i = 1; $i -le $MAX_RETRIES; $i++) {
     try {
-        $response = Invoke-RestMethod -Uri $healthUrl -TimeoutSec 5 -UseBasicParsing
+        $response = Invoke-RestMethod -Uri $URL -TimeoutSec 5 -UseBasicParsing
 
         if ($response.status -eq "UP") {
-            Write-Host "✅ Health check PASSED for $Env"
+            Write-Host "✅ HEALTH CHECK PASSED for $Env"
             exit 0
         }
-
-        Write-Host "Attempt $i: Status received but not UP"
+        else {
+            Write-Host "Attempt $i: Service responded but status not UP"
+        }
     }
     catch {
-        Write-Host "Attempt $i: Service not ready yet"
+        Write-Host "Attempt $i: Backend not ready yet"
     }
 
-    Start-Sleep -Seconds $retryDelay
+    Start-Sleep -Seconds $SLEEP
 }
 
-Write-Error "❌ Health check FAILED for $Env after retries"
+Write-Error "❌ HEALTH CHECK FAILED for $Env after retries"
 exit 1
