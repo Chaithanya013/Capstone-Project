@@ -1,15 +1,16 @@
 services:
+
   db:
     image: postgres:15
     environment:
       POSTGRES_DB: capstone_staging
-      POSTGRES_USER: stage_user
-      POSTGRES_PASSWORD: stage_pass
+      POSTGRES_USER: staging_user
+      POSTGRES_PASSWORD: staging_pass
     volumes:
       - pgdata_staging:/var/lib/postgresql/data
 
   backend:
-    image: chaithanya013/backend:dev
+    image: chaithanya013/backend:staging
     env_file:
       - .env.staging
     ports:
@@ -18,7 +19,7 @@ services:
       - db
 
   frontend:
-    image: chaithanya013/frontend:dev
+    image: chaithanya013/frontend:staging
     ports:
       - "9091:80"
     depends_on:
