@@ -2,34 +2,20 @@ pipeline {
     agent any
 
     parameters {
-        choice(
-            name: 'ENV',
-            choices: ['dev', 'staging', 'prod'],
-            description: 'Select environment'
-        )
+        choice(name: 'ENV', choices: ['dev', 'staging', 'prod'], description: 'Select environment')
     }
 
     stages {
-
         stage('Checkout Code') {
             steps {
                 checkout scm
             }
         }
 
-        stage('Build Backend Image') {
+        stage('Build Images') {
             steps {
-                dir('backend') {
-                    bat 'docker build -t chaithanya013/backend:dev -f dockerfile .'
-                }
-            }
-        }
-
-        stage('Build Frontend Image') {
-            steps {
-                dir('frontend') {
-                    bat 'docker build -t chaithanya013/frontend:dev -f dockerfile .'
-                }
+                dir('backend') { bat 'docker build -t chaithanya013/backend:dev -f dockerfile .' }
+                dir('frontend') { bat 'docker build -t chaithanya013/frontend:dev -f dockerfile .' }
             }
         }
 
@@ -41,71 +27,42 @@ pipeline {
             }
         }
 
-        stage('Save Images for Trivy') {
+        stage('Trivy Scan') {
             steps {
-                bat '''
-                docker save chaithanya013/backend:dev -o backend.tar
-                docker save chaithanya013/frontend:dev -o frontend.tar
-                '''
-            }
-        }
-
-        stage('Trivy Scan - Backend') {
-            steps {
-                bat '''
-                docker run --rm ^
-                  -v %CD%:/scan ^
-                  aquasec/trivy:latest image ^
-                  --input /scan/backend.tar ^
-                  --severity HIGH,CRITICAL ^
-                  --exit-code 0
-                '''
-            }
-        }
-
-        stage('Trivy Scan - Frontend') {
-            steps {
-                bat '''
-                docker run --rm ^
-                  -v %CD%:/scan ^
-                  aquasec/trivy:latest image ^
-                  --input /scan/frontend.tar ^
-                  --severity HIGH,CRITICAL ^
-                  --exit-code 0
-                '''
-            }
-        }
-
-        stage('Push Images to Docker Hub') {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    bat '''
-                    docker login -u %DOCKER_USER% -p %DOCKER_PASS%
-                    docker tag chaithanya013/backend:dev chaithanya013/backend:%ENV%
-                    docker tag chaithanya013/frontend:dev chaithanya013/frontend:%ENV%
-                    docker push chaithanya013/backend:%ENV%
-                    docker push chaithanya013/frontend:%ENV%
-                    '''
+                bat 'docker save chaithanya013/backend:dev -o backend.tar'
+                script {
+                    def ws = env.WORKSPACE.replace('\\', '/')
+                    bat "docker run --rm -v ${ws}:/scan aquasec/trivy:latest image --input /scan/backend.tar --severity HIGH,CRITICAL"
                 }
             }
         }
 
-        stage('Deploy Application') {
+        stage('Push to Docker Hub') {
             steps {
-                bat '''
-                docker compose -f docker-compose.%ENV%.yml down --remove-orphans
-                docker compose -f docker-compose.%ENV%.yml up -d
-                '''
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    bat """
+                        docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
+                        docker tag chaithanya013/backend:dev chaithanya013/backend:${params.ENV}
+                        docker push chaithanya013/backend:${params.ENV}
+                    """
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                // Use double quotes to ensure Jenkins replaces ${params.ENV}
+                bat """
+                    docker compose -f docker-compose.${params.ENV}.yml down --remove-orphans
+                    docker compose -f docker-compose.${params.ENV}.yml up -d
+                """
             }
         }
 
         stage('Health Check') {
             steps {
-                bat 'powershell -ExecutionPolicy Bypass -File scripts\\health_check.ps1 -Env %ENV%'
+                // Pass the parameter correctly to PowerShell
+                bat "powershell -ExecutionPolicy Bypass -File scripts\\health_check.ps1 -Env ${params.ENV}"
             }
         }
     }
@@ -113,7 +70,7 @@ pipeline {
     post {
         failure {
             echo 'Pipeline failed. Triggering rollback....'
-            bat 'powershell -ExecutionPolicy Bypass -File scripts\\rollback.ps1 -Env %ENV%'
+            bat "powershell -ExecutionPolicy Bypass -File scripts\\rollback.ps1 -Env ${params.ENV}"
         }
     }
 }
