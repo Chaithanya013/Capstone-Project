@@ -9,16 +9,20 @@ RUN useradd -m appuser
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy source code
-COPY app.py /app/app.py
-COPY tests /app/tests
-COPY migrations /app/migrations
+# Copy app and tests
+COPY app.py .
+COPY tests ./tests
 
-# Make sure app.py is importable
-ENV PYTHONPATH=/app
+# Environment best practices
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 USER appuser
 
 EXPOSE 5000
 
-CMD ["python", "/app/app.py"]
+# Docker-native healthcheck (VALID SYNTAX)
+HEALTHCHECK --interval=10s --timeout=3s --retries=5 CMD \
+  python -c "import requests,sys; sys.exit(0 if requests.get('http://localhost:5000/health').status_code==200 else 1)"
+
+CMD ["python", "app.py"]
