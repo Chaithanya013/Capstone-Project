@@ -10,7 +10,6 @@ services:
       - pgdata_prod:/var/lib/postgresql/data
 
   backend:
-    container_name: capstone-dev-backend
     image: chaithanya013/backend:prod
     env_file:
       - .env.prod

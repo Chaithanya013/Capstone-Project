@@ -89,18 +89,6 @@ pipeline {
             }
         }
 
-        stage('Run DB Migrations') {
-            steps {
-                script {
-                    def containerName = "capstone-${params.ENV}-backend"
-                    bat """
-                    docker exec ${containerName} sh /app/run_migrations.sh
-                    """
-                }
-            }
-        }
-
-
         stage('Health Check') {
             steps {
                 bat "powershell -ExecutionPolicy Bypass -File scripts\\health_check.ps1 -Env ${params.ENV}"

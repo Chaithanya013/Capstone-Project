@@ -10,7 +10,6 @@ services:
       - pgdata_staging:/var/lib/postgresql/data
 
   backend:
-    container_name: capstone-staging-backend
     image: chaithanya013/backend:staging
     env_file:
       - .env.staging
