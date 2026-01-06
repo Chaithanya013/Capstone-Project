@@ -43,3 +43,4 @@ while ($retry -lt $maxRetries) {
 
 Write-Error "Health check FAILED for $Env"
 exit 1
+

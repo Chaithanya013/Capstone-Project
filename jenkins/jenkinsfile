@@ -19,11 +19,16 @@ pipeline {
 
         stage('Build Images') {
             steps {
-                dir('backend') {
-                    bat 'docker build -t chaithanya013/backend:dev -f dockerfile .'
+                script {
+                    env.IMAGE_TAG = params.ENV
                 }
+
+                dir('backend') {
+                    bat "docker build -t chaithanya013/backend:${env.IMAGE_TAG} -f dockerfile ."
+                }
+
                 dir('frontend') {
-                    bat 'docker build -t chaithanya013/frontend:dev -f dockerfile .'
+                    bat "docker build -t chaithanya013/frontend:${env.IMAGE_TAG} -f dockerfile ."
                 }
             }
         }
@@ -66,12 +71,10 @@ pipeline {
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    bat """
-                        echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
-                        docker tag chaithanya013/backend:dev chaithanya013/backend:${params.ENV}
-                        docker tag chaithanya013/frontend:dev chaithanya013/frontend:${params.ENV}
-                        docker push chaithanya013/backend:${params.ENV}
-                        docker push chaithanya013/frontend:${params.ENV}
+                     bat """
+                    docker login -u %DOCKER_USER% -p %DOCKER_PASS%
+                    docker push chaithanya013/backend:${env.IMAGE_TAG}
+                    docker push chaithanya013/frontend:${env.IMAGE_TAG}
                     """
                 }
             }
