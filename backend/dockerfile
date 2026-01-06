@@ -12,6 +12,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app.py .
 COPY tests ./tests
 
+COPY migrations /app/migrations
+COPY run_migrations.sh /app/run_migrations.sh
+
+
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app

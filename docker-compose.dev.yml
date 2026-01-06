@@ -9,6 +9,7 @@ services:
       - pgdata_dev:/var/lib/postgresql/data
 
   backend:
+    container_name: capstone-dev-backend
     image: chaithanya013/backend:dev
     environment:
       APP_ENV: dev
