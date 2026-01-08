@@ -94,7 +94,15 @@ pipeline {
                 bat "powershell -ExecutionPolicy Bypass -File scripts\\health_check.ps1 -Env ${params.ENV}"
             }
         }
-    }
+        
+        stage('Set Build Description') {
+            steps {
+                script {
+                    currentBuild.description = "ENV=${params.ENV} | Backend & Frontend deployed successfully"
+                }
+            }
+        }
+    
 
     post {
         failure {
