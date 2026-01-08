@@ -94,7 +94,7 @@ pipeline {
                 bat "powershell -ExecutionPolicy Bypass -File scripts\\health_check.ps1 -Env ${params.ENV}"
             }
         }
-        
+
         stage('Set Build Description') {
             steps {
                 script {
@@ -102,7 +102,7 @@ pipeline {
                 }
             }
         }
-    
+    }
 
     post {
         failure {
