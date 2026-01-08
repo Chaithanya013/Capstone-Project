@@ -1,18 +1,5 @@
 FROM nginx:alpine
 
-# Remove default config
-RUN rm -rf /usr/share/nginx/html/*
-
-# Create non-root user
-RUN adduser -D appuser
-
-# Copy static files
-COPY index.html /usr/share/nginx/html/
-
-# Change ownership
-RUN chown -R appuser:appuser /usr/share/nginx/html
-
-# Switch to non-root user
-USER appuser
+COPY index.html /usr/share/nginx/html/index.html
 
 EXPOSE 80

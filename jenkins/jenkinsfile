@@ -36,7 +36,7 @@ pipeline {
         stage('Unit Tests') {
             steps {
                 dir('backend') {
-                    bat 'docker run --rm chaithanya013/backend:dev pytest -p no:cacheprovider'
+                    bat "docker run --rm chaithanya013/backend:${env.IMAGE_TAG} pytest -p no:cacheprovider"
                 }
             }
         }
@@ -47,17 +47,17 @@ pipeline {
                     def ws = env.WORKSPACE.replace('\\', '/')
 
                     bat """
-                        docker save chaithanya013/backend:dev -o backend.tar
-                        docker save chaithanya013/frontend:dev -o frontend.tar
+                        docker save chaithanya013/backend:${env.IMAGE_TAG} -o backend.tar
+                        docker save chaithanya013/frontend:${env.IMAGE_TAG} -o frontend.tar
                     """
 
                     bat """
-                        docker run --rm -v ${ws}:/scan aquasec/trivy:latest image \
+                        docker run --rm -v ${ws}:/scan aquasec/trivy:latest image ^
                         --input /scan/backend.tar --severity HIGH,CRITICAL --exit-code 0
                     """
 
                     bat """
-                        docker run --rm -v ${ws}:/scan aquasec/trivy:latest image \
+                        docker run --rm -v ${ws}:/scan aquasec/trivy:latest image ^
                         --input /scan/frontend.tar --severity HIGH,CRITICAL --exit-code 0
                     """
                 }
@@ -71,10 +71,10 @@ pipeline {
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                     bat """
-                    docker login -u %DOCKER_USER% -p %DOCKER_PASS%
-                    docker push chaithanya013/backend:${env.IMAGE_TAG}
-                    docker push chaithanya013/frontend:${env.IMAGE_TAG}
+                    bat """
+                        docker login -u %DOCKER_USER% -p %DOCKER_PASS%
+                        docker push chaithanya013/backend:${env.IMAGE_TAG}
+                        docker push chaithanya013/frontend:${env.IMAGE_TAG}
                     """
                 }
             }

@@ -1,12 +1,105 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Capstone Frontend</title>
+    <meta charset="UTF-8">
+    <title>Capstone Pharmacy Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        table {
+            width: 80%;
+            margin: auto;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #555;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to Capstone Project</h1>
-    <p>This is a simple frontend.</p>
-    <p>Backend health endpoint:</p>
-    <p><strong>http://localhost:5000/health</strong></p>
+
+<h1>💊 Pharmacy Sales Dashboard</h1>
+
+<table>
+    <tr>
+        <th>S.No</th>
+        <th>Medicine Name</th>
+        <th>Type</th>
+        <th>Sold Quantity</th>
+        <th>Price (₹)</th>
+        <th>Total (₹)</th>
+    </tr>
+
+    <tr>
+        <td>1</td>
+        <td>Paracetamol</td>
+        <td>Tablet</td>
+        <td>120</td>
+        <td>5</td>
+        <td>600</td>
+    </tr>
+
+    <tr>
+        <td>2</td>
+        <td>Amoxicillin</td>
+        <td>Capsule</td>
+        <td>80</td>
+        <td>12</td>
+        <td>960</td>
+    </tr>
+
+    <tr>
+        <td>3</td>
+        <td>Cough Syrup</td>
+        <td>Liquid</td>
+        <td>45</td>
+        <td>75</td>
+        <td>3375</td>
+    </tr>
+
+    <tr>
+        <td>4</td>
+        <td>Vitamin D</td>
+        <td>Tablet</td>
+        <td>60</td>
+        <td>20</td>
+        <td>1200</td>
+    </tr>
+</table>
+
+<footer>
+    <p>Capstone Project | CI/CD with Jenkins & Docker</p>
+</footer>
+
 </body>
 </html>
