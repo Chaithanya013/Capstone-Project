@@ -95,7 +95,7 @@ pipeline {
             }
         }
 
-        stage('Set Build Description') {
+        stage('Success') {
             steps {
                 script {
                     currentBuild.description = "ENV=${params.ENV} | Backend & Frontend deployed successfully"
