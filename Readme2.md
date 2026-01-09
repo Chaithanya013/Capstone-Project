@@ -1,11 +1,26 @@
+# Secure CI/CD Pipeline with Jenkins, Docker & Trivy
+
+## Table of Contents
+
+- [Project Overview](#project-overview)
+- [Problem Statement & Goals](#problem-statement--goals)
+- [Key Features & Highlights](#key-features--highlights)
+- [Architecture](#architecture)
+- [Technology Stack](#technology-stack)
+- [Repository Structure](#repository-structure)
+- [CI/CD Pipeline Flow](#cicd-pipeline-flow)
+- [Security Implementation – Trivy](#security-implementation--trivy)
+- [Environment Strategy](#environment-strategy)
+- [Deployment Runbook](#deployment-runbook)
+- [Troubleshooting Guide](#troubleshooting-guide)
+- [Conclusion](#conclusion)
+
+
 ## 1. Project Overview
 
 This project implements a **secure, end-to-end CI/CD pipeline** designed to automate the complete lifecycle of a containerized web application, including **build, test, security validation, image distribution, and deployment**. The solution leverages **Jenkins** for pipeline orchestration, **Docker** for containerization, and **Trivy** for vulnerability scanning, ensuring that only verified and secure container images are promoted through the delivery process.
 
 The pipeline supports **multiple deployment environments (DEV, STAGING, PROD)** and follows **real-world DevOps and DevSecOps practices** such as automated quality gates, environment consistency, and post-deployment health verification. GitHub webhooks exposed via **Ngrok** enable event-driven pipeline execution, while **Docker Compose** is used to deploy and manage frontend and backend services in a reliable and repeatable manner. This project is designed to closely resemble production-grade CI/CD systems used in modern software delivery.
-
-> 📸 **Screenshot Placement (Not required for this section)**
-> This section is intentionally kept text-only. Screenshots will be placed in later sections such as **CI/CD Pipeline Flow**, **Deployment Runbook**, and **Security Implementation** where visual proof adds more value.
 
 ---
 
@@ -27,9 +42,6 @@ The primary goals of this project are:
 * Reduce manual intervention and human error during deployments
 * Provide fast feedback through automated testing and health checks
 * Design a CI/CD workflow that closely mirrors **real-world, production-grade DevOps practices**
-
-> 📸 **Screenshot Placement (Not required for this section)**
-> This section focuses on problem context and objectives. Visual evidence will be provided in later sections such as **CI/CD Pipeline Flow**, **Security Implementation**, and **Deployment Runbook** where execution results are demonstrated.
 
 ---
 
@@ -57,11 +69,6 @@ This project is designed to demonstrate **practical, production-aligned DevOps a
 
 * **Event-Driven Pipeline Triggering**
   GitHub webhooks exposed through **Ngrok** enable automatic pipeline execution on every code push.
-
-> 📸 **Screenshot Placement**
->
-> * Docker multi-stage build proof (Docker build logs)
->   `screenshots/docker-multistage-build.png`
 
 ---
 
@@ -108,10 +115,6 @@ Docker Compose (DEV / STAGING / PROD)
 
 This architecture mirrors **real-world production CI/CD systems**, emphasizing automation, security, and operational reliability.
 
-> 📸 **Screenshot Placement**
->
-> * High-level architecture diagram
->   `screenshots/architecture-diagram.png`
 
 ---
 
@@ -132,9 +135,6 @@ The following tools and technologies were selected to build a **production-align
 | Configuration           | .env files                     | Manages environment-specific variables                          |
 
 This stack reflects commonly used tools in **real-world DevOps and DevSecOps pipelines**, ensuring the project closely resembles modern production systems.
-
-> 📸 **Screenshot Placement (Optional)**
-> This section is primarily descriptive. Screenshots are optional and typically not required here. Tool usage evidence is demonstrated in later sections such as **CI/CD Pipeline Flow**, **Security Implementation**, and **Deployment Runbook**.
 
 ---
 
@@ -159,12 +159,13 @@ Capstone_Project/
 ├── docker-compose.dev.yml    # DEV environment services
 ├── docker-compose.staging.yml# STAGING environment services
 ├── docker-compose.prod.yml   # PROD environment services
+├── docker-compose.yml        # Multi-Container orchestration
 ├── jenkins/
 │   └── Jenkinsfile           # Jenkins Declarative Pipeline
 ├── .env.dev                  # DEV environment variables
 ├── .env.staging              # STAGING environment variables
 ├── .env.prod                 # PROD environment variables
-├── screenshots/              # Project screenshots and proofs
+├── Screenshots              # Project screenshots and proofs
 └── README.md                 # Project documentation
 ```
 
@@ -173,9 +174,6 @@ This structure ensures:
 * Clear separation between **application code**, **CI/CD logic**, and **deployment configuration**
 * Environment-specific configurations without duplication
 * Easy navigation for reviewers and interviewers
-
-> 📸 **Screenshot Placement (Not required for this section)**
-> Repository structure is self-explanatory and does not require visual proof.
 
 ---
 
@@ -209,8 +207,6 @@ Deploy using Docker Compose
 Health Check Validation
 ```
 
-> 📸 **Screenshot Placement**
->
 > * CI/CD pipeline flow diagram
 >   `screenshots/cicd-pipeline-flow.png`
 
@@ -265,14 +261,10 @@ Each pipeline execution follows a well-defined sequence of stages:
 
 The pipeline supports multiple environments and provides clear visibility into deployment success for each environment.
 
-> 📸 **Screenshot Placement**
->
-> * Jenkins pipeline success – DEV environment
->   `screenshots/jenkins-dev-success.png`
-> * Jenkins pipeline success – STAGING environment
->   `screenshots/jenkins-staging-success.png`
-> * Jenkins pipeline success – PROD environment
->   `screenshots/jenkins-prod-success.png`
+![Jenkins Pipeline DEV](screenshots/jenkins-dev-success.png)
+![Jenkins Pipeline STAGING](screenshots/jenkins-staging-success.png)
+![Jenkins Pipeline PROD](screenshots/jenkins-prod-success.png)
+
 
 This CI/CD pipeline ensures **speed, security, and reliability**, closely aligning with modern DevOps and DevSecOps best practices.
 
@@ -301,10 +293,8 @@ Integrating Trivy into the pipeline helps identify security risks **early in the
 
 This approach ensures security issues are caught **before runtime**, aligning with DevSecOps best practices.
 
-> 📸 **Screenshot Placement**
->
-> * Trivy vulnerability scan results in Jenkins console
->   `screenshots/trivy-scan.png`
+![Trivy Scan Results](screenshots/trivy-scan.png)
+
 
 By embedding security scanning into the CI/CD workflow, this project demonstrates a proactive and automated approach to container security.
 
@@ -404,19 +394,26 @@ After deployment, the application is verified automatically and can also be vali
 
 **Frontend Verification:**
 
-* Access the web UI in a browser:
+* Access the web UI in a browser: 
 
   * `http://localhost:9090`
+  * `http://localhost:9091`
+  * `http://localhost:9092`
 
-> 📸 **Screenshot Placement**
->
-> * Frontend application UI
->   `screenshots/frontend-ui.png`
+
+
+![Frontend UI1](screenshots/frontend-ui.png)
+![Frontend UI2](screenshots/frontend-ui.png)
+![Frontend UI3](screenshots/frontend-ui.png)
+
+
 
 **Backend Verification:**
 
 * Check backend health endpoint:
 
+  * `http://localhost:5000/health`
+  * `http://localhost:5001/health`
   * `http://localhost:5002/health`
 
 Expected response:
@@ -428,9 +425,11 @@ Expected response:
 ```
 
 > 📸 **Screenshot Placement**
->
-> * Backend health endpoint response
->   `screenshots/backend-health.png`
+
+![Backend Health1](screenshots/backend-health.png)
+![Backend Health2](screenshots/backend-health.png)
+![Backend Health3](screenshots/backend-health.png)
+
 
 ---
 
@@ -457,6 +456,10 @@ docker compose -f docker-compose.<env>.yml up -d
 For maintenance or troubleshooting purposes:
 
 ```bash
+docker compose -f docker-compose.dev.yml down
+docker compose -f docker-compose.staging.yml down
+docker compose -f docker-compose.prod.yml down
+
 docker system prune -af
 ```
 
@@ -468,109 +471,183 @@ Use cleanup commands cautiously, especially in higher environments.
 
 This section outlines **common issues** that may occur during CI/CD pipeline execution or application deployment, along with recommended checks and resolutions. It is intended as a quick reference for operators during failures.
 
-### 11.1 Jenkins Pipeline Not Triggering
+### 11.1. Jenkins Pipeline Not Triggering Automatically
 
-**Symptoms:**
+**Symptoms**
 
-* Git push does not start a Jenkins build
-* No recent activity visible in Jenkins
+* Git push does not start Jenkins build
+* No activity in Jenkins job
 
-**Checks & Resolutions:**
+**Checks & Fixes**
 
-* Verify GitHub webhook configuration and delivery status
-* Ensure the webhook URL matches the Ngrok public URL
-* Confirm Jenkins job has webhook trigger enabled
+* Ensure GitHub Webhook is configured with the correct URL:
 
-> 📸 **Screenshot Placement**
->
-> * GitHub webhook delivery success / Ngrok terminal output
->   `screenshots/ngrok-terminal.png`
+  * `https://<ngrok-url>/github-webhook/`
+* Verify webhook delivery status in GitHub → Repository → Settings → Webhooks
+* Confirm Jenkins job has **GitHub hook trigger for GITScm polling** enabled
+
 
 ---
 
-### 11.2 Docker Image Build Failures
+### 11.2. Pipeline Fails at Docker Build Stage
 
-**Symptoms:**
+**Symptoms**
 
-* Pipeline fails during Docker build stage
-* Errors related to Dockerfile or missing files
+* `docker build` command fails in Jenkins
+* Dockerfile not found or permission denied
 
-**Checks & Resolutions:**
+**Checks & Fixes**
 
-* Ensure Docker is running on the Jenkins agent
-* Verify correct Dockerfile paths and naming
-* Review Docker build logs for syntax or dependency errors
+* Confirm Docker is running on the Jenkins agent
+* Verify correct Dockerfile name and path (case-sensitive)
+* Run locally:
 
----
-
-### 11.3 Unit Test Failures in Pipeline
-
-**Symptoms:**
-
-* Tests pass locally but fail in Jenkins
-* Import or dependency errors during test execution
-
-**Checks & Resolutions:**
-
-* Ensure all dependencies are included in the Docker image
-* Confirm test files are copied correctly into the container
-* Re-run tests inside the container for debugging
+  ```bash
+  docker build -t test-image backend/
+  ```
+* Ensure Jenkins user has permission to run Docker
 
 ---
 
-### 11.4 Trivy Security Scan Failures
+### 11.3. Unit Tests Failing in Pipeline but Passing Locally
 
-**Symptoms:**
+**Symptoms**
 
-* Pipeline stops at the Trivy scan stage
-* HIGH or CRITICAL vulnerabilities reported
+* Pytest fails in Jenkins
+* Import errors like `ModuleNotFoundError`
 
-**Checks & Resolutions:**
+**Checks & Fixes**
 
-* Review Trivy scan output in Jenkins logs
-* Update base images and dependencies
-* Rebuild images and re-run the pipeline
+* Ensure `PYTHONPATH` is set correctly in Dockerfile:
 
-> 📸 **Screenshot Placement**
->
-> * Trivy scan failure or results output
->   `screenshots/trivy-scan.png`
+  ```dockerfile
+  ENV PYTHONPATH=/app
+  ```
+* Confirm test files are copied into the image
+* Run inside container to debug:
 
----
-
-### 11.5 Deployment Failures (Docker Compose)
-
-**Symptoms:**
-
-* Containers fail to start
-* Port conflicts or service not reachable
-
-**Checks & Resolutions:**
-
-* Stop existing containers before deployment
-* Verify environment-specific port mappings
-* Validate Docker Compose configuration files
+  ```bash
+  docker run --rm <image> pytest -v
+  ```
 
 ---
 
-### 11.6 Health Check Failures
+### 11.4. Trivy Scan Failing Pipeline
 
-**Symptoms:**
+**Symptoms**
 
-* Pipeline fails during health check stage
-* Application containers are running but marked unhealthy
+* Pipeline stops at Trivy stage
+* Vulnerabilities reported
 
-**Checks & Resolutions:**
+**Checks & Fixes**
 
-* Confirm backend `/health` endpoint is accessible
-* Validate correct port mapping for the selected environment
-* Inspect container logs for runtime errors
+* Verify Trivy image scan uses saved image (`docker save` → `.tar`)
+* For learning/demo, keep:
+
+  ```
+  --exit-code 0
+  ```
+* Review Trivy output for HIGH/CRITICAL issues
+
 
 ---
 
-### 11.7 General Recovery Commands
+### 11.5. Deployment Stage Fails (Docker Compose)
 
-Use the following commands **only if the environment becomes unstable**:
+**Symptoms**
+
+* Port already allocated
+* Containers not starting
+
+**Checks & Fixes**
+
+* Stop existing containers before deploy:
+
+  ```bash
+  docker compose -f docker-compose.<env>.yml down
+  ```
+* Ensure each environment uses **unique ports**
+* Validate compose file syntax:
+
+  ```bash
+  docker compose config
+  ```
+
+---
+
+### 11.6. Health Check Stage Failing
+
+**Symptoms**
+
+* Pipeline fails only at Health Check
+* Works in dev but fails in staging/prod
+
+**Checks & Fixes**
+
+* Ensure backend exposes `/health` endpoint
+* Verify correct port mapping per environment
+* Confirm PowerShell script receives ENV parameter correctly
+* Test manually:
+
+  ```bash
+  curl http://localhost:<port>/health
+  ```
+
+
+---
+
+### 11.7. Frontend Not Accessible in Browser
+
+**Symptoms**
+
+* `localhost:9090 / 9091 / 9092` not loading
+* Frontend container exits
+
+**Checks & Fixes**
+
+* Check frontend container logs:
+
+  ```bash
+  docker logs <frontend-container>
+  ```
+* Ensure frontend image is built and pushed correctly
+* Verify Nginx/HTML files are copied into image
+
+---
+
+### 11.8. Docker Hub Push Failures
+
+**Symptoms**
+
+* Authentication errors during push
+
+**Checks & Fixes**
+
+* Re-check Docker Hub credentials in Jenkins
+* Login locally to validate:
+
+  ```bash
+  docker login
+  ```
+* Ensure correct image tag (`dev`, `staging`, `prod`)
+
+---
+
+### 11.9. Environment-Specific Issues
+
+**Symptoms**
+
+* Works in dev but not in staging/prod
+
+**Checks & Fixes**
+
+* Verify correct `.env` file is used
+* Confirm environment-specific ports and image tags
+* Ensure Jenkins parameter `ENV` matches compose file names
+
+---
+
+### Quick Recovery Commands
 
 ```bash
 docker stop $(docker ps -q)
