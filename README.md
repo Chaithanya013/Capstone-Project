@@ -2,18 +2,21 @@
 
 ## Table of Contents
 
-- [1.Project Overview](#project-overview)
-- [2.Problem Statement & Goals](#problem-statement--goals)
-- [3.Key Features & Highlights](#key-features--highlights)
-- [4.Architecture](#architecture)
-- [5.Technology Stack](#technology-stack)
-- [6.Repository Structure](#repository-structure)
-- [7.CI/CD Pipeline Flow](#cicd-pipeline-flow)
-- [8.Security Implementation – Trivy](#security-implementation--trivy)
-- [9.Environment Strategy](#environment-strategy)
-- [10.Deployment Runbook](#deployment-runbook)
-- [11.Troubleshooting Guide](#troubleshooting-guide)
-- [12.Conclusion](#conclusion)
+## Table of Contents
+
+1. [Project Overview](#1-project-overview)
+2. [Problem Statement & Goals](#2-problem-statement--goals)
+3. [Key Features & Highlights](#3-key-features--highlights)
+4. [Architecture](#4-architecture)
+5. [Technology Stack](#5-technology-stack)
+6. [Repository Structure](#6-repository-structure)
+7. [CI/CD Pipeline Flow](#7-cicd-pipeline-flow)
+8. [Security Implementation – Trivy](#8-security-implementation--trivy)
+9. [Environment Strategy](#9-environment-strategy)
+10. [Deployment Runbook](#10-deployment-runbook)
+11. [Troubleshooting Guide](#11-troubleshooting-guide)
+12. [Conclusion](#12-conclusion)
+
 
 
 ## 1. Project Overview
