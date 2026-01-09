@@ -5,6 +5,7 @@
 * [Project Overview](#project-overview)
 * [Architecture](#architecture)
 * [Technology Stack](#technology-stack)
+* [Tools & Technologies Used](#tools--technologies-used)
 * [Repository Structure](#repository-structure)
 * [CI/CD Pipeline Flow](#cicd-pipeline-flow)
 * [Docker Best Practices Applied](#docker-best-practices-applied)
@@ -71,6 +72,32 @@ The pipeline supports **multiple environments (dev, staging, prod)** and follows
 
 ---
 
+## Tools & Technologies Used
+
+### CI/CD & Automation
+- Jenkins – CI/CD pipeline orchestration
+- GitHub Webhooks – Event-based pipeline triggering
+- Ngrok – Public tunnel for local Jenkins webhook access
+
+### Containerization & Deployment
+- Docker – Containerization of backend and frontend
+- Docker Compose – Multi-container orchestration (dev, staging, prod)
+- Docker Hub – Image registry for versioned images
+
+### Security & Quality
+- Trivy – Container vulnerability scanning (HIGH & CRITICAL)
+- Pytest – Backend unit testing inside containers
+
+### Application Stack
+- Backend – Python, Flask
+- Frontend – HTML (served via Nginx)
+- Database – PostgreSQL
+
+### Version Control
+- Git – Source control
+- GitHub – Repository hosting
+
+---
 ## Repository Structure
 
 ```
@@ -547,7 +574,17 @@ docker rm $(docker ps -aq)
 docker system prune -af
 ```
 
-Use these only when the environment is completely stuck.
+
+
+---
+
+## Conclusion
+
+This project successfully demonstrates a complete, real-world CI/CD pipeline using Jenkins and Docker to build, test, scan, and deploy a two-tier web application across **dev, staging, and prod** environments.
+
+By implementing automated builds, containerized unit testing, Trivy security scanning, Docker image versioning, environment-specific deployments, and webhook-based auto-triggering via **GitHub + Ngrok**, the pipeline eliminates manual intervention and ensures reliable, repeatable deployments.
+
+Overall, this project reflects industry-standard DevOps practices, focusing on automation, security, and environment consistency, and provides a strong foundation that can be easily extended with additional features or cloud-based deployments in the future.
 
 ---
 
