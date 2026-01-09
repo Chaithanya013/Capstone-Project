@@ -2,8 +2,6 @@
 
 ## Table of Contents
 
-## Table of Contents
-
 1. [Project Overview](#1-project-overview)
 2. [Problem Statement & Goals](#2-problem-statement--goals)
 3. [Key Features & Highlights](#3-key-features--highlights)
@@ -16,7 +14,6 @@
 10. [Deployment Runbook](#10-deployment-runbook)
 11. [Troubleshooting Guide](#11-troubleshooting-guide)
 12. [Conclusion](#12-conclusion)
-
 
 
 ## 1. Project Overview
