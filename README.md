@@ -2,18 +2,18 @@
 
 ## Table of Contents
 
-- [Project Overview](#project-overview)
-- [Problem Statement & Goals](#problem-statement--goals)
-- [Key Features & Highlights](#key-features--highlights)
-- [Architecture](#architecture)
-- [Technology Stack](#technology-stack)
-- [Repository Structure](#repository-structure)
-- [CI/CD Pipeline Flow](#cicd-pipeline-flow)
-- [Security Implementation – Trivy](#security-implementation--trivy)
-- [Environment Strategy](#environment-strategy)
-- [Deployment Runbook](#deployment-runbook)
-- [Troubleshooting Guide](#troubleshooting-guide)
-- [Conclusion](#conclusion)
+- [1.Project Overview](#project-overview)
+- [2.Problem Statement & Goals](#problem-statement--goals)
+- [3.Key Features & Highlights](#key-features--highlights)
+- [4.Architecture](#architecture)
+- [5.Technology Stack](#technology-stack)
+- [6.Repository Structure](#repository-structure)
+- [7.CI/CD Pipeline Flow](#cicd-pipeline-flow)
+- [8.Security Implementation – Trivy](#security-implementation--trivy)
+- [9.Environment Strategy](#environment-strategy)
+- [10.Deployment Runbook](#deployment-runbook)
+- [11.Troubleshooting Guide](#troubleshooting-guide)
+- [12.Conclusion](#conclusion)
 
 
 ## 1. Project Overview
@@ -164,7 +164,7 @@ Capstone_Project/
 ├── .env.dev                  # DEV environment variables
 ├── .env.staging              # STAGING environment variables
 ├── .env.prod                 # PROD environment variables
-├── Screenshots              # Project screenshots and proofs
+├── Screenshots               # Project screenshots and proofs
 └── README.md                 # Project documentation
 ```
 
