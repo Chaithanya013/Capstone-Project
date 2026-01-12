@@ -18,7 +18,7 @@ def get_db_connection():
 def home():
     return f"Hello from {os.getenv('APP_ENV', 'unknown')} environment!"
 
-# ✅ CI-SAFE HEALTH CHECK (NO DB)
+# CI-SAFE HEALTH CHECK (NO DB)
 @app.route("/health")
 def health():
     return jsonify({
@@ -26,7 +26,7 @@ def health():
         "service": "backend"
     }), 200
 
-# ✅ DB HEALTH (OPTIONAL, NOT USED BY JENKINS)
+# DB HEALTH (OPTIONAL, NOT USED BY JENKINS)
 @app.route("/health/db")
 def health_db():
     try:

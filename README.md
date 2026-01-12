@@ -77,6 +77,8 @@ This project is designed to demonstrate **practical, production-aligned DevOps a
 
 This project follows a **modular, event-driven CI/CD architecture** designed to ensure scalability, security, and consistency across environments. Each component in the architecture has a clearly defined responsibility, enabling reliable automation from code commit to deployment.
 
+![CI/CD Architecture](https://github.com/Chaithanya013/Capstone-Project/blob/3049bd3fc2d6d1c755686a05625aae76de59366a/Screenshots/CICD%20Architecture.png)
+
 ### 4.1 High-Level Architecture Overview
 
 The architecture begins with a developer pushing code changes to the GitHub repository. A GitHub webhook, exposed securely using **Ngrok**, notifies Jenkins of the change. Jenkins then orchestrates the complete CI/CD workflow, including building Docker images, running tests, performing security scans, pushing images to Docker Hub, and deploying the application using Docker Compose.
