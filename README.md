@@ -14,6 +14,7 @@
 10. [Deployment Runbook](#10-deployment-runbook)
 11. [Troubleshooting Guide](#11-troubleshooting-guide)
 12. [Conclusion](#12-conclusion)
+13. [Developer Details](#13-developer-details)
 
 
 ## 1. Project Overview
@@ -662,3 +663,16 @@ This project demonstrates the design and implementation of a **secure, automated
 Through this project, key competencies such as **CI/CD pipeline design**, **container security enforcement**, **multi-stage Docker builds**, **environment management**, and **operational troubleshooting** are showcased. The use of GitHub webhooks with Ngrok, automated health checks, and structured deployment workflows further emphasize reliability and automation-first thinking.
 
 Overall, this capstone project serves as a strong **portfolio-ready implementation**, demonstrating the ability to build, secure, deploy, and operate scalable containerized applications. It is well-suited for technical discussions, interviews, and real-world DevOps scenarios where automation, security, and consistency are critical.
+
+---
+
+## 13. Developer Details
+
+* **Name:** V.Siva Chaithanya
+* **Project Name:** Secure CI/CD Pipeline with Jenkins, Docker & Trivy
+* **GitHub:** [@Chaithanya013](https://github.com/Chaithanya013/Capstone-Project.git)
+* **Docker Hub:** [@chaithanya013](https://hub.docker.com/u/chaithanya013)
+* **Medium Blog:** [@SivaChaithanya](https://medium.com/@chaithanyav.0203/securing-software-delivery-how-i-built-a-production-grade-ci-cd-pipeline-with-jenkins-docker-4c5847438565)
+* **Email:** chaithanyav.0203@gmail.com
+
+
